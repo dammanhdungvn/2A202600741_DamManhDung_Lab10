@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import pandas as pd
 from datetime import datetime, UTC
 from core.config import load_settings
-from ingestion.crossref import fetch_source_records
+from ingestion.crossref import fetch_source_records, load_raw_records
 from ingestion.cleaning import build_clean_dataframe
 from retrieval.index import LocalEmbeddingIndex
 from evaluation.testset import build_test_set
 from evaluation.metrics import evaluate_pipeline
 from observability.quality import run_data_quality_checks, build_freshness_report
 from observability.reporting import generate_phase1_report
-from core.utils import read_json, write_json
 
 def main() -> None:
     settings = load_settings()
@@ -22,7 +20,6 @@ def main() -> None:
         # It already writes to raw_records_json inside the function
     else:
         print("Loading raw records from cache...")
-        from ingestion.crossref import load_raw_records
         records = load_raw_records(settings.paths.raw_records_json)
         
     print("Cleaning data...")

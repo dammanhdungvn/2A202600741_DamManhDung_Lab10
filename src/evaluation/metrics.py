@@ -6,7 +6,7 @@ import os
 import sys
 import types
 from typing import Any
-
+from concurrent.futures import ThreadPoolExecutor
 from datasets import Dataset
 from pydantic import BaseModel, Field
 
@@ -108,27 +108,26 @@ def evaluate_pipeline(
     answers_output_path,
 ) -> EvaluationBundle:
     test_set = read_json(test_set_path)
-    answers: list[dict[str, Any]] = []
-
-    for item in test_set:
+    def eval_item(item):
         result = answer_question(item["question"], settings=settings, index=index)
         judge = _judge_answer(settings, item["question"], item["ground_truth"], result.answer)
         retrieval_hit = any(doc_id in item["ground_truth_doc_ids"] for doc_id in result.retrieved_doc_ids)
-        answers.append(
-            {
-                "id": item["id"],
-                "question_type": item["question_type"],
-                "question": item["question"],
-                "ground_truth": item["ground_truth"],
-                "ground_truth_doc_ids": item["ground_truth_doc_ids"],
-                "answer": result.answer,
-                "retrieved_doc_ids": result.retrieved_doc_ids,
-                "retrieved_contexts": result.retrieved_contexts,
-                "retrieval_hit": retrieval_hit,
-                "token_f1": _token_f1(item["ground_truth"], result.answer),
-                "judge": judge.model_dump(),
-            }
-        )
+        return {
+            "id": item["id"],
+            "question_type": item["question_type"],
+            "question": item["question"],
+            "ground_truth": item["ground_truth"],
+            "ground_truth_doc_ids": item["ground_truth_doc_ids"],
+            "answer": result.answer,
+            "retrieved_doc_ids": result.retrieved_doc_ids,
+            "retrieved_contexts": result.retrieved_contexts,
+            "retrieval_hit": retrieval_hit,
+            "token_f1": _token_f1(item["ground_truth"], result.answer),
+            "judge": judge.model_dump(),
+        }
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        answers = list(executor.map(eval_item, test_set))
 
     summary = {
         "samples": len(answers),

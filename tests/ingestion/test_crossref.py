@@ -1,7 +1,4 @@
-import pytest
 import responses
-from pathlib import Path
-from core.config import load_settings
 from ingestion.crossref import parse_crossref_payload, fetch_source_records
 
 def test_parse_crossref_payload():

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import pandas as pd
 from datetime import datetime, UTC
 from core.config import load_settings
-from core.utils import read_json, write_json
+from core.utils import read_json
 from ingestion.cleaning import build_clean_dataframe
 from ingestion.corruption import corrupt_clean_dataframe
 from ingestion.crossref import load_raw_records

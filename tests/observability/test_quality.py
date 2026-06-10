@@ -1,4 +1,3 @@
-import pytest
 import pandas as pd
 from unittest.mock import MagicMock
 from observability.quality import run_data_quality_checks, build_freshness_report

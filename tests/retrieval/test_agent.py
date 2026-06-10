@@ -1,5 +1,4 @@
 from unittest.mock import MagicMock
-from core.config import Settings
 from retrieval.agent import run_agent_question
 
 def test_run_agent_question():

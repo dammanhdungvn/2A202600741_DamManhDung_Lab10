@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, UTC
+from datetime import datetime
 import pandas as pd
 
 from ingestion.crossref import PaperRecord

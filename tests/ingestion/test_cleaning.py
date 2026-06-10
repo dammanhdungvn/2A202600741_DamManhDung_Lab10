@@ -1,5 +1,3 @@
-import pytest
-import pandas as pd
 from datetime import datetime, UTC
 from ingestion.crossref import PaperRecord
 from ingestion.cleaning import build_clean_dataframe
