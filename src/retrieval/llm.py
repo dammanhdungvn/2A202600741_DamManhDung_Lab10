@@ -56,5 +56,6 @@ def build_llm(settings: Settings, temperature: float = 0.0):
             api_key=settings.qwen_api_key,
             base_url=settings.qwen_base_url,
             temperature=temperature,
+            max_retries=1,
         )
     raise RuntimeError(f"Unsupported LLM provider: {settings.llm_provider}")

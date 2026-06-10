@@ -11,5 +11,5 @@
 
 ## Evaluation Metrics
 - Hit Rate: 100.00%
-- Token F1: 16.26%
+- Token F1: 14.98%
 - LLM Judge Accuracy: 0.00%

@@ -126,8 +126,10 @@ def evaluate_pipeline(
             "judge": judge.model_dump(),
         }
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        answers = list(executor.map(eval_item, test_set))
+    from tqdm import tqdm
+    answers = []
+    for item in tqdm(test_set, desc="Evaluating answers"):
+        answers.append(eval_item(item))
 
     summary = {
         "samples": len(answers),

@@ -4,7 +4,7 @@ from datetime import datetime, UTC
 from core.config import load_settings
 from core.utils import read_json
 from ingestion.cleaning import build_clean_dataframe
-from ingestion.corruption import corrupt_clean_dataframe
+from ingestion.corruption import build_unprocessed_dataframe
 from ingestion.crossref import load_raw_records
 from retrieval.index import LocalEmbeddingIndex
 from evaluation.metrics import evaluate_pipeline
@@ -19,8 +19,8 @@ def main() -> None:
     clean_df = build_clean_dataframe(records, datetime.now(UTC))
     baseline_metrics = read_json(settings.paths.baseline_metrics)
     
-    print("Corrupting data...")
-    corrupt_df = corrupt_clean_dataframe(clean_df, settings.paths.corruption_log)
+    print("Corrupting data (Using Raw Unprocessed Data)...")
+    corrupt_df = build_unprocessed_dataframe(records, settings.paths.corruption_log)
     
     print("Evaluating corrupted data...")
     corrupted_index = LocalEmbeddingIndex.build(corrupt_df, settings, settings.paths.corrupted_embeddings_json)

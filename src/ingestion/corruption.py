@@ -3,39 +3,39 @@ from __future__ import annotations
 import pandas as pd
 from core.utils import write_json
 
-def corrupt_clean_dataframe(df: pd.DataFrame, output_log_path) -> pd.DataFrame:
-    df_corrupt = df.copy()
-    if len(df_corrupt) == 0:
-        return df_corrupt
+from ingestion.crossref import PaperRecord
+
+def build_unprocessed_dataframe(records: list[PaperRecord], output_log_path) -> pd.DataFrame:
+    if not records:
+        return pd.DataFrame()
         
-    logs = []
+    df = pd.DataFrame([r.__dict__ for r in records])
     
-    # 1. Blank summary
-    if len(df_corrupt) >= 1:
-        idx = df_corrupt.index[0]
-        df_corrupt.at[idx, 'summary'] = ""
-        df_corrupt.at[idx, 'summary_chars'] = 0
-        logs.append(f"Blanked summary at index {idx}")
-        
-    # 2. Add duplicate rows
-    if len(df_corrupt) >= 2:
-        dup_row = df_corrupt.iloc[[1]].copy()
-        df_corrupt = pd.concat([df_corrupt, dup_row], ignore_index=True)
-        logs.append(f"Duplicated row with paper_id {dup_row['paper_id'].values[0]}")
-        
-    # 3. Make published date old (stale)
-    if len(df_corrupt) >= 3:
-        idx = df_corrupt.index[2]
-        old_date = pd.Timestamp.now() - pd.Timedelta(days=1000)
-        df_corrupt.at[idx, 'published_dt'] = old_date.strftime('%Y-%m-%dT%H:%M:%SZ')
-        df_corrupt.at[idx, 'age_days'] = 1000
-        logs.append(f"Made published date stale for index {idx}")
-        
-    # Rebuild text_for_embedding
-    df_corrupt['text_for_embedding'] = df_corrupt.apply(
-        lambda row: f"Title: {row.get('title', '')}\nAuthors: {row.get('authors_joined', '')}\nPublished: {row.get('published', '')}\nCategories: {row.get('categories_joined', '')}\nSummary: {row.get('summary', '')}",
-        axis=1
-    )
+    # Giữ nguyên cấu trúc thô để Index không bị crash schema
+    df['published_dt'] = df['published']
+    df['age_days'] = 0
+    df['authors_joined'] = df['authors'].apply(lambda x: str(x) if isinstance(x, list) else "")
+    df['categories_joined'] = df['categories'].apply(lambda x: str(x) if isinstance(x, list) else "")
+    df['summary_chars'] = df['summary'].str.len().fillna(0)
     
-    write_json(output_log_path, logs)
-    return df_corrupt
+    import random
+    import json
+    
+    def simulate_pipeline_failure(row):
+        rand = random.random()
+        # 1. Lỗi bị chặn cào dữ liệu (Scraper Blocked - 403 Forbidden HTML)
+        if rand < 0.35:
+            return f"<!DOCTYPE html><html lang='en'><head><title>403 Forbidden</title></head><body><h1>Access Denied</h1><p>Your IP has been blocked by Cloudflare.</p><!-- metadata: {row.get('paper_id')} --></body></html>"
+        # 2. Lỗi cấu trúc JSON thay đổi (Schema Drift / Parsing Error)
+        elif rand < 0.70:
+            return f"{{'status': 500, 'error': 'Failed to parse abstract', 'raw_dump': {json.dumps(row.get('title', ''))}, 'body': '[Object object]'}}"
+        # 3. Lỗi mất mát dữ liệu (Null propagation)
+        else:
+            title_trunc = str(row.get('title', ''))[:20]
+            return f"NaN | NULL | {title_trunc}... | NaN | NoneType object has no attribute 'abstract'"
+
+    # Mô phỏng tập Bẩn (Corrupted) bằng các lỗi Pipeline thực tế
+    df['text_for_embedding'] = df.apply(simulate_pipeline_failure, axis=1)
+    
+    write_json(output_log_path, ["Giả lập các lỗi Data Pipeline thực tế (403 HTML, JSON Schema Drift, Null Propagation) vào tập Dữ liệu Bẩn."])
+    return df
