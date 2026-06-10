@@ -30,6 +30,7 @@ Plan -> Execute -> Verify
 - [x] **Phase 3:** Develop QA Agent with multi-provider LLM (Qwen).
 - [x] **Phase 4:** Implement Evaluation (testset, metrics) and Observability gates.
 - [x] **Phase 5:** Build and run Corruption & Repair Flow to validate observability.
+- [x] **Phase 6:** Build Streamlit UI (Observability Dashboard, Trace Visualization, and Execution Animation).
 
 ## What NOT To Do
 - **DO NOT** hardcode secrets or base URLs. Always read from `.env` using `os.getenv()`.
