@@ -52,6 +52,8 @@ class Settings:
     ollama_base_url: str
     custom_llm_api_key: str | None
     custom_llm_base_url: str | None
+    qwen_api_key: str | None
+    qwen_base_url: str
     embedding_model: str
     baseline_collection_name: str
     corrupted_collection_name: str
@@ -119,6 +121,8 @@ def load_settings(project_dir: Path | None = None) -> Settings:
         ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
         custom_llm_api_key=os.getenv("CUSTOM_LLM_API_KEY"),
         custom_llm_base_url=os.getenv("CUSTOM_LLM_BASE_URL"),
+        qwen_api_key=os.getenv("QWEN_API_KEY"),
+        qwen_base_url=os.getenv("QWEN_BASE_URL", "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"),
         embedding_model="sentence-transformers/all-MiniLM-L6-v2",
         baseline_collection_name="papers-baseline",
         corrupted_collection_name="papers-corrupted",
@@ -141,6 +145,8 @@ def normalized_provider(settings: Settings) -> str:
         return "anthropic"
     if provider == "customllm":
         return "custom"
+    if provider == "qwen":
+        return "qwen"
     return provider
 
 
@@ -168,6 +174,10 @@ def require_llm_credentials(settings: Settings) -> None:
         if settings.custom_llm_base_url:
             return
         raise RuntimeError("CUSTOM_LLM_BASE_URL is required when LLM_PROVIDER=custom.")
+    if provider == "qwen":
+        if settings.qwen_api_key:
+            return
+        raise RuntimeError("QWEN_API_KEY is required when LLM_PROVIDER=qwen.")
     raise RuntimeError(
-        "Unsupported LLM_PROVIDER. Expected one of: openai, gemini, anthropic, openrouter, ollama, custom."
+        "Unsupported LLM_PROVIDER. Expected one of: openai, gemini, anthropic, openrouter, ollama, custom, qwen."
     )
