@@ -1,5 +1,5 @@
 import pytest
-from src.core.config import Settings, require_llm_credentials
+from core.config import Settings, require_llm_credentials
 
 def test_qwen_provider_requires_api_key():
     settings = Settings(
