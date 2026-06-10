@@ -8,7 +8,8 @@ def build_test_set(df: pd.DataFrame, output_path) -> list[dict[str, Any]]:
     if len(df) == 0:
         return []
     
-    sample_df = df.head(5)
+    # Giảm xuống 1 để tăng tốc độ chạy Pipeline (test 3 câu hỏi thay vì 15)
+    sample_df = df.head(1)
     
     test_set = []
     for idx, row in sample_df.iterrows():

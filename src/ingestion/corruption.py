@@ -27,7 +27,7 @@ def corrupt_clean_dataframe(df: pd.DataFrame, output_log_path) -> pd.DataFrame:
     if len(df_corrupt) >= 3:
         idx = df_corrupt.index[2]
         old_date = pd.Timestamp.now() - pd.Timedelta(days=1000)
-        df_corrupt.at[idx, 'published_dt'] = old_date
+        df_corrupt.at[idx, 'published_dt'] = old_date.strftime('%Y-%m-%dT%H:%M:%SZ')
         df_corrupt.at[idx, 'age_days'] = 1000
         logs.append(f"Made published date stale for index {idx}")
         

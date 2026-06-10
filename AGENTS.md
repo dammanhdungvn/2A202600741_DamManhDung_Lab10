@@ -29,7 +29,7 @@ Plan -> Execute -> Verify
 - [x] **Phase 2:** Build Indexing (ChromaDB + MiniLM).
 - [x] **Phase 3:** Develop QA Agent with multi-provider LLM (Qwen).
 - [x] **Phase 4:** Implement Evaluation (testset, metrics) and Observability gates.
-- [ ] **Phase 5:** Build and run Corruption & Repair Flow to validate observability.
+- [x] **Phase 5:** Build and run Corruption & Repair Flow to validate observability.
 
 ## What NOT To Do
 - **DO NOT** hardcode secrets or base URLs. Always read from `.env` using `os.getenv()`.
