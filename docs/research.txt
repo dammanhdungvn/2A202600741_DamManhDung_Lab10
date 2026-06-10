@@ -1,0 +1,47 @@
+# Vibe-Coding Deep Research: Data Pipeline & Data Observability (Lab 10)
+
+## 1. Project Context
+- **Name:** Lab 10 - Data Pipeline & Data Observability for RAG Systems
+- **Goal:** Build an end-to-end data pipeline focusing on the principle "Garbage in → Garbage out". The pipeline includes ingesting raw data from the Crossref API, cleaning it, generating embeddings, and storing it in ChromaDB for a Multi-Provider LLM QA Agent.
+- **Problem Statement:** AI projects spend 60-80% of their time on data preparation. A RAG agent will hallucinate if fed with bad data. We need to implement data observability to catch corrupted data before it impacts the RAG agent's responses.
+
+## 2. Technical Stack
+- **Language/Environment:** Python, `uv` (or pip)
+- **Ingestion Source:** Crossref API (`https://api.crossref.org/works`)
+- **Vector Store:** ChromaDB
+- **Embedding Model:** `sentence-transformers/all-MiniLM-L6-v2`
+- **LLM Providers:** Multi-provider support (OpenAI, Gemini, Anthropic, OpenRouter, Ollama)
+- **Evaluation/Metrics:** Retrieval hit rate, token F1 score, LLM-as-a-Judge (accuracy, mean judge score)
+
+## 3. Data Pipeline Breakdown
+- **Ingestion (`src/ingestion/crossref.py`):** 
+  - Fetch scholarly works from Crossref.
+  - Parse the dynamic JSON response (fields like `DOI`, `title`, `author`, `issued`).
+  - Implement polite requests and handle rate-limiting.
+- **Transformation & Cleaning (`src/ingestion/cleaning.py`):**
+  - Normalize text, resolve missing fields, deduplicate.
+  - Compile a solid `text_for_embedding` column.
+  - Add metadata like `age_days` for freshness checks.
+- **Indexing (`src/retrieval/index.py`):**
+  - Embed chunked data using MiniLM.
+  - Upsert to a ChromaDB collection.
+
+## 4. Observability & Quality Assurance
+Based on the RAG Observability Triad (Retrieval Quality, Generation Fidelity, Operational Metrics):
+- **Data Quality Gates:** Check for null rates, completeness, uniqueness, and adherence to expected schemas.
+- **Freshness Monitoring:** Ensure the `issued` date or publication metrics are recent, flagging stale documents.
+- **Evaluation (LLM-as-a-Judge):** Evaluate outputs against a golden testset (`src/evaluation/testset.py`) to measure Context Precision and Answer Faithfulness.
+
+## 5. Corruption Flow & Resilience
+To prove the value of the observability pipeline, the system simulates data degradation:
+- **Corruption Techniques:** Deleting latest records, blanking/noising summaries, truncating titles, inserting duplicates.
+- **Measurement:** Compare baseline agent metrics vs. corrupted agent metrics.
+- **Repair:** Prove that running the data cleaning and ingestion flow properly repairs the data and restores the agent's performance.
+
+## 6. Implementation Strategy & Next Steps
+1. Setup local environment using `uv sync`.
+2. Implement Crossref ingestion and JSON mapping.
+3. Build the cleaning logic to output a high-quality dataset.
+4. Execute `script/run_phase1.py` for baseline evaluation.
+5. Build and execute `script/run_corruption_flow.py` to compare and document the impact of bad data.
+6. Generate a final markdown report showcasing Data Quality, Freshness, and Metrics Comparison.
